@@ -21,4 +21,12 @@ function decryptId(encryptedId) {
   return parseInt(decrypt(padded))
 }
 
-module.exports = { decrypt, decryptId }
+function encryptId(id) {
+  return CryptoJS.AES.encrypt(String(id), SECRET)
+    .toString()
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
+}
+
+module.exports = { decrypt, decryptId, encryptId }

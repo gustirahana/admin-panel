@@ -32,6 +32,9 @@ services:
       - APP_NAME=pos-transaction
       - APP_VER=1.0.0
       - BCRYPT_ROUNDS=8
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - db
 

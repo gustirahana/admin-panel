@@ -38,7 +38,7 @@ export const useProductStore = defineStore('product', () => {
     loading.value = true
     error.value   = null
     try {
-      const { data } = await api.put(`/products/${id}`, payload)
+      const { data } = await api.patch(`/products/${id}`, payload)
       return data
     } catch (e) {
       error.value = e.response?.data?.message || 'Failed to update product'

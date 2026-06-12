@@ -8,16 +8,11 @@
       </button>
     </div>
 
-    <div v-if="productStore.error" class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-      {{ productStore.error }}
-    </div>
-
     <!-- Data Table -->
-    <div class="bg-gray-900 rounded-xl shadow-lg border border-gray-800 overflow-hidden">
+    <div class="bg-gray-900 rounded-xl shadow-lg border border-gray-800 overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-800">
-        <thead class="bg-gray-800/50">
+        <thead class="bg-gray-800 border-b border-gray-700">
           <tr>
-            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
             <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Product Name</th>
             <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Price (Rp)</th>
             <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Qty</th>
@@ -25,14 +20,15 @@
           </tr>
         </thead>
         <tbody class="bg-gray-900 divide-y divide-gray-800">
-          <tr v-if="productStore.loading" class="animate-pulse">
-            <td colspan="4" class="px-6 py-12 text-center text-gray-500">Loading products...</td>
+          <tr v-if="productStore.loading" v-for="i in 3" :key="'skel'+i" class="animate-pulse">
+            <td class="px-6 py-6"><div class="h-4 bg-gray-800 rounded w-48"></div></td>
+            <td class="px-6 py-6"><div class="h-4 bg-gray-800 rounded w-24"></div></td>
+            <td class="px-6 py-6"><div class="h-4 bg-gray-800 rounded w-full"></div></td>
           </tr>
           <tr v-else-if="productStore.products.length === 0">
             <td colspan="4" class="px-6 py-12 text-center text-gray-500">No products found.</td>
           </tr>
-          <tr v-for="product in productStore.products" :key="product.id" class="hover:bg-gray-800/50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">#{{ product.id }}</td>
+          <tr v-for="product in paginatedProducts" :key="product.id" class="hover:bg-gray-800 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">{{ product.nama_produk }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Rp {{ product.harga.toLocaleString('id-ID') }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ (product.qty || 0).toLocaleString('id-ID') }}</td>
@@ -43,6 +39,25 @@
           </tr>
         </tbody>
       </table>
+      
+      <!-- Pagination Controls -->
+      <div v-if="productStore.products.length > 0" class="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-800 bg-gray-900/50">
+        <div class="flex items-center text-sm text-gray-400 mb-4 sm:mb-0">
+          <span>Show</span>
+          <select v-model="itemsPerPage" class="mx-2 bg-gray-800 border border-gray-700 text-gray-200 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-cyan-500">
+            <option :value="10">10</option>
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+            <option :value="100">100</option>
+          </select>
+          <span>entries</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button @click="currentPage--" :disabled="currentPage === 1" class="px-3 py-1 bg-gray-800 border border-gray-700 text-gray-300 rounded disabled:opacity-50 hover:bg-gray-700 transition-colors">Prev</button>
+          <span class="text-sm text-gray-400 mx-2">Page {{ currentPage }} of {{ totalPages }}</span>
+          <button @click="currentPage++" :disabled="currentPage === totalPages" class="px-3 py-1 bg-gray-800 border border-gray-700 text-gray-300 rounded disabled:opacity-50 hover:bg-gray-700 transition-colors">Next</button>
+        </div>
+      </div>
     </div>
 
     <!-- Add/Edit Modal -->
@@ -63,11 +78,11 @@
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1">Price (Rp)</label>
-                    <input type="number" v-model="form.harga" class="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all placeholder-gray-500" placeholder="0">
+                    <input type="text" v-model="displayHarga" class="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all placeholder-gray-500" placeholder="0">
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1">Quantity</label>
-                    <input type="number" v-model="form.qty" class="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all placeholder-gray-500" placeholder="0">
+                    <input type="text" v-model="displayQty" class="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all placeholder-gray-500" placeholder="0">
                   </div>
                 </div>
               </div>
@@ -100,7 +115,7 @@
                 <div class="mt-2">
                   <p class="text-sm text-gray-400">
                     Are you sure you want to delete <span class="font-bold text-gray-200">{{ selectedProduct?.nama_produk }}</span>? 
-                    This action is a soft-delete and the product will be hidden from the UI.
+                    This action cannot be undone.
                   </p>
                 </div>
               </div>
@@ -122,10 +137,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useProductStore } from '@/stores/product'
+import { useToastStore } from '@/stores/toast'
 
 const productStore = useProductStore()
+const toastStore = useToastStore()
 
 // Modal States
 const isModalOpen = ref(false)
@@ -140,6 +157,37 @@ const form = ref({
   nama_produk: '',
   harga: '',
   qty: ''
+})
+
+// Pagination States
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+const totalPages = computed(() => {
+  return Math.ceil(productStore.products.length / itemsPerPage.value) || 1
+})
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return productStore.products.slice(start, end)
+})
+
+// Auto-formatting computed properties
+const displayHarga = computed({
+  get: () => form.value.harga ? Number(form.value.harga).toLocaleString('id-ID') : '',
+  set: (val) => {
+    const raw = parseInt(val.replace(/\D/g, ''), 10)
+    form.value.harga = isNaN(raw) ? '' : raw
+  }
+})
+
+const displayQty = computed({
+  get: () => form.value.qty ? Number(form.value.qty).toLocaleString('id-ID') : '',
+  set: (val) => {
+    const raw = parseInt(val.replace(/\D/g, ''), 10)
+    form.value.qty = isNaN(raw) ? '' : raw
+  }
 })
 
 onMounted(() => {
@@ -169,13 +217,15 @@ async function saveProduct() {
   try {
     if (isEdit.value) {
       await productStore.update(selectedProduct.value.id, form.value)
+      toastStore.addToast('success', 'Product updated successfully')
     } else {
       await productStore.create(form.value)
+      toastStore.addToast('success', 'Product created successfully')
     }
     closeModal()
     productStore.fetchAll() // refresh list
   } catch (e) {
-    // handled by store
+    toastStore.addToast('error', productStore.error || 'Operation failed')
   } finally {
     isSaving.value = false
   }
@@ -195,9 +245,10 @@ async function confirmDelete() {
   isDeleting.value = true
   try {
     await productStore.remove(selectedProduct.value.id)
+    toastStore.addToast('success', 'Product deleted successfully')
     closeDeleteModal()
   } catch (e) {
-    // handled by store
+    toastStore.addToast('error', productStore.error || 'Failed to delete')
   } finally {
     isDeleting.value = false
   }

@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-black text-gray-200 flex flex-col md:flex-row font-sans overflow-x-hidden">
+    <AppToast />
     
     <!-- Mobile Header with Hamburger -->
     <div v-if="authStore.isAuthenticated" class="md:hidden flex items-center justify-between bg-gray-900 border-b border-gray-800 p-4 sticky top-0 z-30">
@@ -35,6 +36,7 @@ import { ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AppSidebar from '@/components/AppSidebar.vue'
+import AppToast from '@/components/AppToast.vue'
 
 const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
