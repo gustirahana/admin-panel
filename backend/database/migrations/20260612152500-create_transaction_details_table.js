@@ -2,38 +2,42 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('transactions', {
+    await queryInterface.createTable('transaction_details', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      kode: {
-        type: Sequelize.STRING(30),
-        allowNull: false,
-        unique: true
-      },
-      tanggal: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      total_harga: {
+      transaction_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0
+        references: {
+          model: 'transactions',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
-      tipe_pembayaran: {
-        type: Sequelize.ENUM('gopay', 'emoney', 'shopee', 'cash'),
+      product_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'products',
+          key: 'id'
+        }
+      },
+      harga_satuan: {
+        type: Sequelize.INTEGER,
         allowNull: false
       },
-      status: {
-        type: Sequelize.TINYINT,
-        defaultValue: 0
+      quantitas: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
-      deleted_at: {
-        type: Sequelize.DATE,
-        allowNull: true
+      subtotal: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       created_at: {
         allowNull: false,
@@ -49,6 +53,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('transactions');
+    await queryInterface.dropTable('transaction_details');
   }
 };
