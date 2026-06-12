@@ -13,11 +13,11 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.use('/api/auth',         authRoute)
-app.use('/api/transactions', transactionRoute)
-app.use('/api/products',     productRoute)
-app.use('/api/users',        userRoute)
-app.use('/api/dashboard',    dashboardRoute)
+app.use('/auth',         authRoute)
+app.use('/transactions', transactionRoute)
+app.use('/products',     productRoute)
+app.use('/users',        userRoute)
+app.use('/dashboard',    dashboardRoute)
 
 module.exports = app
 
