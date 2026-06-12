@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 text-gray-800 flex flex-col md:flex-row font-sans overflow-x-hidden">
+  <div class="min-h-screen bg-black text-gray-200 flex flex-col md:flex-row font-sans overflow-x-hidden">
     
     <!-- Mobile Header with Hamburger -->
     <div v-if="authStore.isAuthenticated" class="md:hidden flex items-center justify-between bg-gray-900 border-b border-gray-800 p-4 sticky top-0 z-30">
